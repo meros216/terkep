@@ -30,32 +30,30 @@ body { margin: 0; padding: 0; }
     map.on('style.load', () => {
 
         // ============================================================
-        // 0. TISZTÍTÁS (Köd és Feliratok eltüntetése) - ÚJ RÉSZ! 🧹
+        // 0. TISZTÍTÁS (Köd és Feliratok eltüntetése)
         // ============================================================
         
-        // 1. Köd kikapcsolása (hogy tiszta legyen a horizont)
+        // 1. Köd kikapcsolása
         map.setFog(null);
 
-        // 2. Összes felirat (szöveg és ikon) eltüntetése
+        // 2. Összes felirat eltüntetése
+        // ITT HOZZUK LÉTRE A 'layers' VÁLTOZÓT ELŐSZÖR (ÉS UTOLJÁRA)
         const layers = map.getStyle().layers;
+        
         for (const layer of layers) {
-            // Ha a réteg típusa 'symbol' (azaz szöveg vagy ikon)...
             if (layer.type === 'symbol') {
-                // ...akkor láthatatlanná tesszük
                 map.setLayoutProperty(layer.id, 'visibility', 'none');
             }
         }
 
         // ============================================================
-        // A. FÉNYEK ÉS ÁRNYÉKOK BEÁLLÍTÁSA (FONTOS!)
+        // A. FÉNYEK ÉS ÁRNYÉKOK
         // ============================================================
-        // Ezzel verjük át a rendszert: beállítunk egy irányított fényt,
-        // amitől a házak egyik oldala világos, a másik sötét lesz.
         map.setLight({
-            'anchor': 'viewport', // A fény mozog a kamerával
-            'color': '#ffffff',   // Fehér napfény
-            'intensity': 0.6,     // Fényerősség
-            'position': [1.5, 90, 80] // A fény iránya (innen süssön a nap)
+            'anchor': 'viewport', 
+            'color': '#ffffff',   
+            'intensity': 0.6,     
+            'position': [1.5, 90, 80] 
         });
 
         // ============================================================
@@ -66,13 +64,13 @@ body { margin: 0; padding: 0; }
         if (map.getLayer('water')) {
             map.setPaintProperty('water', 'fill-color', '#a3e0ff');
         }
-        // 2. FOLYÓK (Zagyva, patakok) - Vonalak színezése
+        // 2. FOLYÓK (Zagyva)
         if (map.getLayer('waterway')) {
             map.setPaintProperty('waterway', 'line-color', '#a3e0ff');
-            map.setPaintProperty('waterway', 'line-width', 20); // Legyen kicsit vastagabb
+            map.setPaintProperty('waterway', 'line-width', 20); 
         }
 
-        // 3. ZÖLD TERÜLETEK (Szürkére, hogy ne üssön el)
+        // 3. ZÖLD TERÜLETEK
         const landLayers = ['landuse', 'landcover', 'national-park'];
         for (const layer of landLayers) {
             if (map.getLayer(layer)) {
@@ -81,8 +79,8 @@ body { margin: 0; padding: 0; }
             }
         }
 
-        // 4. UTAK (Fehérre)
-        const layers = map.getStyle().layers;
+        // 4. UTAK
+        // HIBAJAVÍTÁS: Itt töröltem a "const layers = ..." sort, mert már létezik!
         for (const layer of layers) {
             if (layer.id.indexOf('road') >= 0 && layer.type === 'line') {
                 map.setPaintProperty(layer.id, 'line-color', '#8c8c8c');
@@ -100,7 +98,7 @@ body { margin: 0; padding: 0; }
             'type': 'fill-extrusion',
             'minzoom': 14,
             'paint': {
-                'fill-extrusion-color': '#bbbbbb', // Épület színe
+                'fill-extrusion-color': '#bbbbbb', 
                 'fill-extrusion-height': ['get', 'height'],
                 'fill-extrusion-base': ['get', 'min_height'],
                 'fill-extrusion-opacity': 0.95
@@ -125,12 +123,16 @@ body { margin: 0; padding: 0; }
                 'model-id': 'sajat-fa-modell'
             },
             'paint': {
-                'model-scale': [0.005, 0.005, 0.005],
+                // MÉRET FIGYELMEZTETÉS: A 0.005 valószínűleg túl kicsi!
+                // Visszaírtam 1-re. Ha óriásiak a fák, írd át kisebbre.
+                // Ha még mindig nem látszanak, írd át nagyobbra (pl. 50).
+                'model-scale': [0.005, 0.005, 0.005], 
                 'model-rotation': [0, 0, 0],
                 'model-translation': [0, 0, 0]
-                // Mivel már szép fát töltesz le, a színezést kivettem!
             }
         });
+        
+        // E. ÉGBOLT (Napfény miatt)
         if (!map.getLayer('sky')) {
             map.addLayer({
                 'id': 'sky',
@@ -146,11 +148,3 @@ body { margin: 0; padding: 0; }
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
