@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Az én 3D fás térképem</title>
+<title>3D Erdő Térkép</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
@@ -14,47 +14,35 @@ body { margin: 0; padding: 0; }
 <body>
 <div id="map"></div>
 <script>
-    // IDE KELL MAJD A TE KULCSOD!
-    mapboxgl.accessToken = 'pk.eyJ1IjoibWVyb3MyMjE2IiwiYSI6ImNtYWg3c2t3NjA4OHoyc3MzNmJpeW9qY3cifQ.kmg-gGygu1rGHh7VPeFOAQ';
+    // -----------------------------------------------------------
+    // 1. LÉPÉS: IDE MÁSOLD BE A SAJÁT MAPBOX TOKENEDET!
+    // (A 'pk.' kezdetű hosszú szöveget a két aposztróf közé)
+    mapboxgl.accessToken = 'IDE_MÁSOLD_BE_A_MAPBOX_TOKENEDET'; 
+    // -----------------------------------------------------------
 
     const map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/standard', // Ez az új 3D stílus
-        center: [19.0402, 47.4979], // Budapest koordináták [hosszúság, szélesség]
-        zoom: 18,
-        pitch: 60, // Megdöntjük a kamerát, hogy látszódjon a 3D
-        bearing: -17
+        style: 'mapbox://styles/mapbox/standard', // 3D stílus
+        center: [19.877, 47.486], // Beállítottam a koordinátáid közepére!
+        zoom: 16,                 // Kicsit közelebbi nézet
+        pitch: 60,                // Döntött kamera, hogy látszódjon a 3D
+        bearing: -20              // Kicsit elforgatva
     });
 
     map.on('style.load', () => {
-        // 1. Betöltjük a fát a fájlból
+        // --- A: Modell betöltése ---
+        // Itt töltjük be a 3D fa fájlt
         map.addModel('sajat-fa-modell', './fa.glb');
 
-        // 2. Megadjuk a pontokat, ahol a fák legyenek
+        // --- B: Pontok betöltése ---
+        // Itt hivatkozunk a feltöltött GeoJSON fájlra
         map.addSource('fa-pontok', {
             'type': 'geojson',
-            'data': {
-                'type': 'FeatureCollection',
-                'features': [
-                    {
-                        'type': 'Feature',
-                        'geometry': {
-                            'type': 'Point',
-                            'coordinates': [19.0402, 47.4979] // ELSŐ FA HELYE
-                        }
-                    },
-                    {
-                        'type': 'Feature',
-                        'geometry': {
-                            'type': 'Point',
-                            'coordinates': [19.0405, 47.4981] // MÁSODIK FA HELYE
-                        }
-                    }
-                ]
-            }
+            'data': './fak.geojson' // Fontos: ez legyen a fájl neve!
         });
 
-        // 3. Megjelenítjük a réteget
+        // --- C: Megjelenítés ---
+        // Ez teszi rá a modellt a pontokra
         map.addLayer({
             'id': 'fak-retege',
             'type': 'model',
@@ -63,8 +51,9 @@ body { margin: 0; padding: 0; }
                 'model-id': 'sajat-fa-modell'
             },
             'paint': {
-                'model-scale': [1, 1, 1], // Ha túl nagy/kicsi, itt írd át a számokat
-                'model-translation': [0, 0, 0]
+                'model-scale': [1, 1, 1],       // Méret (X, Y, Z) - írd át, ha túl nagy/kicsi
+                'model-rotation': [0, 0, 0],    // Forgatás
+                'model-translation': [0, 0, 0]  // Eltolás
             }
         });
     });
