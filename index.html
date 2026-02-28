@@ -37,6 +37,10 @@ body { margin: 0; padding: 0; }
         if (map.getLayer('water')) {
             map.setPaintProperty('water', 'fill-color', '#a3e0ff');
         }
+        // 2. FOLYÓVIZEK (A Zagyva és patakok)
+        if (map.getLayer('waterway')) {
+            map.setPaintProperty('waterway', 'line-color', '#a3e0ff');
+        }
 
         // 2. ZÖLD TERÜLETEK (Parkok, füves részek)
         // Most szürkére állítottam (#d0d0d0), de átírhatod bármire!
@@ -117,3 +121,4 @@ body { margin: 0; padding: 0; }
 </script>
 </body>
 </html>
+
