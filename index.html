@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>3D Erdő Térkép</title>
+<title>Monokróm 3D Erdő</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
@@ -15,34 +15,33 @@ body { margin: 0; padding: 0; }
 <div id="map"></div>
 <script>
     // -----------------------------------------------------------
-    // 1. LÉPÉS: IDE MÁSOLD BE A SAJÁT MAPBOX TOKENEDET!
-    // (A 'pk.' kezdetű hosszú szöveget a két aposztróf közé)
-    mapboxgl.accessToken = 'pk.eyJ1IjoibWVyb3MyMjE2IiwiYSI6ImNtYWg3c2t3NjA4OHoyc3MzNmJpeW9qY3cifQ.kmg-gGygu1rGHh7VPeFOAQ'; 
+    // NE FELEJTSD EL VISSZAÍRNI A TOKENEDET!
+    mapboxgl.accessToken = 'pk.eyJ1IjoibWVyb3MyMjE2IiwiYSI6ImNtYWg3c2t3NjA4OHoyc3MzNmJpeW9qY3cifQ.kmg-gGygu1rGHh7VPeFOAQ';
     // -----------------------------------------------------------
 
     const map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/meros2216/cmm50exbk00ac01r6fn6c8rd2', // 3D stílus
-        center: [19.877, 47.486], // Beállítottam a koordinátáid közepére!
-        zoom: 16,                 // Kicsit közelebbi nézet
-        pitch: 60,                // Döntött kamera, hogy látszódjon a 3D
-        bearing: 30              // Kicsit elforgatva
+        // ITT VAN AZ ÚJ STÍLUSOD:
+        style: 'mapbox://styles/meros2216/cmm50exbk00ac01r6fn6c8rd2',
+        center: [19.877, 47.486], // Jászberény
+        zoom: 16,
+        pitch: 60,
+        bearing: 30,
+        antialias: true // Ez szebbé teszi a 3D éleket
     });
 
     map.on('style.load', () => {
         // --- A: Modell betöltése ---
-        // Itt töltjük be a 3D fa fájlt
+        // Ha a konzolban 404-es hibát látsz, ellenőrizd a fájlnevet (kisbetű/nagybetű)!
         map.addModel('sajat-fa-modell', './fa.glb');
 
         // --- B: Pontok betöltése ---
-        // Itt hivatkozunk a feltöltött GeoJSON fájlra
         map.addSource('fa-pontok', {
             'type': 'geojson',
-            'data': './fak.geojson' // Fontos: ez legyen a fájl neve!
+            'data': './fak.geojson'
         });
 
         // --- C: Megjelenítés ---
-        // Ez teszi rá a modellt a pontokra
         map.addLayer({
             'id': 'fak-retege',
             'type': 'model',
@@ -51,20 +50,26 @@ body { margin: 0; padding: 0; }
                 'model-id': 'sajat-fa-modell'
             },
             'paint': {
-                'model-scale': [10, 10, 10],       // Méret (X, Y, Z) - írd át, ha túl nagy/kicsi
-                'model-rotation': [0, 0, 0],    // Forgatás
-                'model-translation': [0, 0, 0]  // Eltolás
+                'model-scale': [8, 8, 8],     // Maradt a nagy méret
+                'model-rotation': [0, 0, 0],
+                'model-translation': [0, 0, 0]
             }
         });
+
+        // --- D: Fények (Hogy ne legyen koromsötét a fa) ---
+        // Mivel ez saját stílus, adunk hozzá egy kis "környezeti fényt"
+        if (!map.getLayer('sky')) {
+            map.addLayer({
+                'id': 'sky',
+                'type': 'sky',
+                'paint': {
+                    'sky-type': 'atmosphere',
+                    'sky-atmosphere-sun': [0.0, 0.0],
+                    'sky-atmosphere-sun-intensity': 15
+                }
+            });
+        }
     });
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
