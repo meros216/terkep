@@ -30,6 +30,23 @@ body { margin: 0; padding: 0; }
     map.on('style.load', () => {
 
         // ============================================================
+        // 0. TISZTÍTÁS (Köd és Feliratok eltüntetése) - ÚJ RÉSZ! 🧹
+        // ============================================================
+        
+        // 1. Köd kikapcsolása (hogy tiszta legyen a horizont)
+        map.setFog(null);
+
+        // 2. Összes felirat (szöveg és ikon) eltüntetése
+        const layers = map.getStyle().layers;
+        for (const layer of layers) {
+            // Ha a réteg típusa 'symbol' (azaz szöveg vagy ikon)...
+            if (layer.type === 'symbol') {
+                // ...akkor láthatatlanná tesszük
+                map.setLayoutProperty(layer.id, 'visibility', 'none');
+            }
+        }
+
+        // ============================================================
         // A. FÉNYEK ÉS ÁRNYÉKOK BEÁLLÍTÁSA (FONTOS!)
         // ============================================================
         // Ezzel verjük át a rendszert: beállítunk egy irányított fényt,
@@ -129,6 +146,7 @@ body { margin: 0; padding: 0; }
 </script>
 </body>
 </html>
+
 
 
 
