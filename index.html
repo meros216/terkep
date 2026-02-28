@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Az én 3D fás térképem</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
+<style>
+body { margin: 0; padding: 0; }
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+    // IDE KELL MAJD A TE KULCSOD!
+    mapboxgl.accessToken = 'pk.eyJ1IjoibWVyb3MyMjE2IiwiYSI6ImNtYWg3c2t3NjA4OHoyc3MzNmJpeW9qY3cifQ.kmg-gGygu1rGHh7VPeFOAQ';
+
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/standard', // Ez az új 3D stílus
+        center: [19.0402, 47.4979], // Budapest koordináták [hosszúság, szélesség]
+        zoom: 18,
+        pitch: 60, // Megdöntjük a kamerát, hogy látszódjon a 3D
+        bearing: -17
+    });
+
+    map.on('style.load', () => {
+        // 1. Betöltjük a fát a fájlból
+        map.addModel('sajat-fa-modell', './fa.glb');
+
+        // 2. Megadjuk a pontokat, ahol a fák legyenek
+        map.addSource('fa-pontok', {
+            'type': 'geojson',
+            'data': {
+                'type': 'FeatureCollection',
+                'features': [
+                    {
+                        'type': 'Feature',
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': [19.0402, 47.4979] // ELSŐ FA HELYE
+                        }
+                    },
+                    {
+                        'type': 'Feature',
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': [19.0405, 47.4981] // MÁSODIK FA HELYE
+                        }
+                    }
+                ]
+            }
+        });
+
+        // 3. Megjelenítjük a réteget
+        map.addLayer({
+            'id': 'fak-retege',
+            'type': 'model',
+            'source': 'fa-pontok',
+            'layout': {
+                'model-id': 'sajat-fa-modell'
+            },
+            'paint': {
+                'model-scale': [1, 1, 1], // Ha túl nagy/kicsi, itt írd át a számokat
+                'model-translation': [0, 0, 0]
+            }
+        });
+    });
+</script>
+</body>
+</html>
