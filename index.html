@@ -52,7 +52,7 @@ body { margin: 0; padding: 0; }
         // 2. FOLYÓK (Zagyva, patakok) - Vonalak színezése
         if (map.getLayer('waterway')) {
             map.setPaintProperty('waterway', 'line-color', '#a3e0ff');
-            map.setPaintProperty('waterway', 'line-width', 6); // Legyen kicsit vastagabb
+            map.setPaintProperty('waterway', 'line-width', 10); // Legyen kicsit vastagabb
         }
 
         // 3. ZÖLD TERÜLETEK (Szürkére, hogy ne üssön el)
@@ -68,7 +68,7 @@ body { margin: 0; padding: 0; }
         const layers = map.getStyle().layers;
         for (const layer of layers) {
             if (layer.id.indexOf('road') >= 0 && layer.type === 'line') {
-                map.setPaintProperty(layer.id, 'line-color', '#ffffff');
+                map.setPaintProperty(layer.id, 'line-color', '#8c8c8c');
             }
         }
 
@@ -108,7 +108,7 @@ body { margin: 0; padding: 0; }
                 'model-id': 'sajat-fa-modell'
             },
             'paint': {
-                'model-scale': [0.01, 0.01, 0.01],
+                'model-scale': [0.005, 0.005, 0.005],
                 'model-rotation': [0, 0, 0],
                 'model-translation': [0, 0, 0]
                 // Mivel már szép fát töltesz le, a színezést kivettem!
@@ -118,6 +118,7 @@ body { margin: 0; padding: 0; }
 </script>
 </body>
 </html>
+
 
 
 
