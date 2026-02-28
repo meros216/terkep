@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Árnyékos 3D Térkép</title>
+<title>Árnyékos 3D Térkép (Javított)</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
@@ -10,9 +10,8 @@
 body { margin: 0; padding: 0; }
 #map { position: absolute; top: 0; bottom: 0; width: 100%; }
 
-/* --- EZ A TRÜKK! --- */
-/* Ez a sor fekete-fehérre állítja az egész térképet a böngészőben. */
-/* Ha színesben akarod látni, és majd Photoshopban módosítani, töröld ki a 'filter' sort! */
+/* --- FEKETE-FEHÉR SZŰRŐ --- */
+/* Ez teszi makett-szerűvé. Ha színesben akarod látni, töröld ki ezt a 3 sort! */
 .mapboxgl-canvas {
     filter: grayscale(100%); 
 }
@@ -26,7 +25,7 @@ body { margin: 0; padding: 0; }
 
     const map = new mapboxgl.Map({
         container: 'map',
-        // VISSZATÉRÜNK A STANDARDHOZ (Mert csak ebben van vetett árnyék!)
+        // CSAK EZ TUD VETETT ÁRNYÉKOT!
         style: 'mapbox://styles/mapbox/standard', 
         center: [19.877, 47.486],
         zoom: 16,
@@ -35,20 +34,22 @@ body { margin: 0; padding: 0; }
         antialias: true
     });
 
-    // Itt állítjuk be a "Standard" stílus extráit
     map.on('style.load', () => {
         
-        // 1. FELIRATOK ELTÜNTETÉSE (Configgal sokkal egyszerűbb itt!)
+        // 1. BEÁLLÍTÁSOK (Standard stílushoz)
         map.setConfig('basemap', {
-            'showPointOfInterestLabels': false, // Boltok nevei
-            'showTransitLabels': false,         // Buszmegállók
-            'showRoadLabels': false,            // Utcanevek
-            'showPlaceLabels': false,           // Városnevek
-            'lightPreset': 'dawn'               // 'dawn' (hajnal) = Hosszú, drámai árnyékok!
-                                                // Próbáld ki: 'day', 'dusk', 'night'
+            'showPointOfInterestLabels': false, // Boltok nevei KI
+            'showTransitLabels': false,         // Buszmegállók KI
+            'showRoadLabels': false,            // Utcanevek KI
+            'showPlaceLabels': false,           // Városnevek KI
+            'lightPreset': 'dawn'               // HAJNALI FÉNY (Hosszú árnyékok!)
         });
 
-        // 2. FÁK BETÖLTÉSE
+        // 2. KÖD ELTÜNTETÉSE
+        map.setFog(null);
+
+        // 3. FÁK BETÖLTÉSE
+        // (Ha hibát dob a konzol, ellenőrizd, hogy 'fa.glb' a neve a GitHubon!)
         map.addModel('sajat-fa-modell', './fa.glb');
 
         map.addSource('fa-pontok', {
@@ -64,8 +65,7 @@ body { margin: 0; padding: 0; }
                 'model-id': 'sajat-fa-modell'
             },
             'paint': {
-                // Mivel a Standard stílusnak saját fényei vannak, 
-                // a fák automatikusan árnyékot fognak vetni!
+                // VISSZAÁLLÍTOTTAM NAGYRA!
                 'model-scale': [0.005, 0.005, 0.005], 
                 'model-rotation': [0, 0, 0],
                 'model-translation': [0, 0, 0]
