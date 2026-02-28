@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Monokróm 3D Erdő</title>
+<title>Monokróm Erdő Kék Vízzel</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
@@ -14,34 +14,34 @@ body { margin: 0; padding: 0; }
 <body>
 <div id="map"></div>
 <script>
-    // -----------------------------------------------------------
-    // NE FELEJTSD EL VISSZAÍRNI A TOKENEDET!
+    // --- 1. LÉPÉS: A TOKENED ---
     mapboxgl.accessToken = 'pk.eyJ1IjoibWVyb3MyMjE2IiwiYSI6ImNtYWg3c2t3NjA4OHoyc3MzNmJpeW9qY3cifQ.kmg-gGygu1rGHh7VPeFOAQ';
-    // -----------------------------------------------------------
 
     const map = new mapboxgl.Map({
         container: 'map',
-        // ITT VAN AZ ÚJ STÍLUSOD:
-        style: 'mapbox://styles/meros2216/cmm50exbk00ac01r6fn6c8rd2',
-        center: [19.877, 47.486], // Jászberény
+        style: 'mapbox://styles/mapbox/light-v11', // Alap szürke térkép
+        center: [19.877, 47.486],
         zoom: 16,
         pitch: 60,
         bearing: 30,
-        antialias: true // Ez szebbé teszi a 3D éleket
+        antialias: true
     });
 
     map.on('style.load', () => {
-        // --- A: Modell betöltése ---
-        // Ha a konzolban 404-es hibát látsz, ellenőrizd a fájlnevet (kisbetű/nagybetű)!
+        
+        // --- 2. LÉPÉS: VÍZ SZÍNEZÉSE ---
+        if (map.getLayer('water')) {
+            map.setPaintProperty('water', 'fill-color', '#a3e0ff'); // KÉK
+        }
+
+        // --- 3. LÉPÉS: FÁK BETÖLTÉSE ÉS ÁTSZÍNEZÉSE ---
         map.addModel('sajat-fa-modell', './fa.glb');
 
-        // --- B: Pontok betöltése ---
         map.addSource('fa-pontok', {
             'type': 'geojson',
             'data': './fak.geojson'
         });
 
-        // --- C: Megjelenítés ---
         map.addLayer({
             'id': 'fak-retege',
             'type': 'model',
@@ -50,28 +50,20 @@ body { margin: 0; padding: 0; }
                 'model-id': 'sajat-fa-modell'
             },
             'paint': {
-                'model-scale': [8, 8, 8],     // Maradt a nagy méret
+                'model-scale': [8, 8, 8],
                 'model-rotation': [0, 0, 0],
-                'model-translation': [0, 0, 0]
+                'model-translation': [0, 0, 0],
+
+                // --- ITT TÖRTÉNIK A VARÁZSLAT! ---
+                // Ez a sor mondja meg, milyen színű legyen a fa:
+                'model-color': '#808080', // Középszürke (írhatsz 'white'-ot vagy 'black'-et is)
+                
+                // Ez a sor mondja meg, mennyire fedje el az eredeti színt:
+                // 0 = eredeti zöld, 1 = teljesen szürke
+                'model-color-mix-intensity': 1 
             }
         });
-
-        // --- D: Fények (Hogy ne legyen koromsötét a fa) ---
-        // Mivel ez saját stílus, adunk hozzá egy kis "környezeti fényt"
-        if (!map.getLayer('sky')) {
-            map.addLayer({
-                'id': 'sky',
-                'type': 'sky',
-                'paint': {
-                    'sky-type': 'atmosphere',
-                    'sky-atmosphere-sun': [0.0, 0.0],
-                    'sky-atmosphere-sun-intensity': 15
-                }
-            });
-        }
     });
 </script>
 </body>
 </html>
-
-
