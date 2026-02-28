@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Építészeti Látványterv</title>
+<title>Építészeti Látványterv - Javított</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
@@ -14,76 +14,59 @@ body { margin: 0; padding: 0; }
 <body>
 <div id="map"></div>
 <script>
-    // --- 1. TOKEN (Ide másold a sajátodat!) ---
+    // --- 1. TOKEN ---
     mapboxgl.accessToken = 'pk.eyJ1IjoibWVyb3MyMjE2IiwiYSI6ImNtYWg3c2t3NjA4OHoyc3MzNmJpeW9qY3cifQ.kmg-gGygu1rGHh7VPeFOAQ';
 
     const map = new mapboxgl.Map({
         container: 'map',
-        // Ez a "Standard" stílus tudja az igazi árnyékokat!
-        style: 'mapbox://styles/meros2216/cmm50exbk00ac01r6fn6c8rd2', 
+        style: 'mapbox://styles/meros2216/cmm50exbk00ac01r6fn6c8rd2', // Az árnyékos stílus
         center: [19.877, 47.486],
-        zoom: 16.5,     // Kicsit közelebbről indítunk
-        pitch: 65,      // Erősebb döntés a 3D hatásért
-        bearing: 30,   // Forgatás
+        zoom: 16.5,
+        pitch: 65,
+        bearing: 30,
         antialias: true
     });
 
     map.on('style.load', () => {
 
-        // ============================================================
-        // A. A LÁTVÁNY BEÁLLÍTÁSA (TISZTA ÉS ÁRNYÉKOS)
-        // ============================================================
+        // A. BEÁLLÍTÁSOK (Feliratok ki, Árnyék be)
         map.setConfig('basemap', {
-            // 1. Feliratok teljes kiirtása:
-            'showPointOfInterestLabels': false, // Boltok, éttermek
-            'showTransitLabels': false,         // Busz, vonat
-            'showRoadLabels': false,            // Utcanevek
-            'showPlaceLabels': false,           // Városnevek
-            
-            // 2. Fények beállítása (EZ ADJA A KONTRASZTOT):
-            // 'dawn'  = Hajnal (Hosszú, drámai árnyékok, meleg fény) - AJÁNLOTT!
-            // 'day'   = Dél (Rövid árnyékok, éles fehér fény)
-            // 'dusk'  = Alkonyat (Hosszú árnyékok, narancsos fény)
-            'lightPreset': 'dawn' 
+            'showPointOfInterestLabels': false,
+            'showTransitLabels': false,
+            'showRoadLabels': false,
+            'showPlaceLabels': false,
+            'lightPreset': 'dawn' // Hajnali fények = Hosszú árnyékok!
         });
 
-        // 3. Köd eltüntetése (Kristálytiszta kép)
+        // B. KÖD ELTÜNTETÉSE
         map.setFog(null);
 
-        // ============================================================
-        // B. A TE FÁID BETÖLTÉSE
-        // ============================================================
-        
-        // Modell betöltése
+        // C. FÁK BETÖLTÉSE
         map.addModel('sajat-fa-modell', './fa.glb');
 
-        // Pontok betöltése
         map.addSource('fa-pontok', {
             'type': 'geojson',
             'data': './fak.geojson'
         });
 
-        // Megjelenítés
         map.addLayer({
             'id': 'fak-retege',
             'type': 'model',
+            // --- EZ HIÁNYZOTT! ---
+            // Ez mondja meg a Standard stílusnak, hogy hova tegye a fákat:
+            'slot': 'middle', 
+            // ---------------------
             'source': 'fa-pontok',
             'layout': {
                 'model-id': 'sajat-fa-modell'
             },
             'paint': {
-                // MÉRET: Itt hagytam az 50-est, mert azt mondtad, az volt a jó.
-                // Ha túl nagy, írd át 10-re vagy 1-re!
-                'model-scale': [0.005, 0.005, 0.005], 
+                'model-scale': [0.005, 0.005, 0.005], // Maradt a nagy méret
                 'model-rotation': [0, 0, 0],
-                'model-translation': [0, 0, 0],
-                
-                // Mivel ez 'standard' stílus, a fák automatikusan kapnak 
-                // napfényt és vetnek árnyékot! Nem kell külön színezni.
+                'model-translation': [0, 0, 0]
             }
         });
     });
 </script>
 </body>
 </html>
-
