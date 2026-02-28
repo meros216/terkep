@@ -2,13 +2,20 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Végleges Monokróm Térkép</title>
+<title>Árnyékos 3D Térkép</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
 <style>
 body { margin: 0; padding: 0; }
 #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+
+/* --- EZ A TRÜKK! --- */
+/* Ez a sor fekete-fehérre állítja az egész térképet a böngészőben. */
+/* Ha színesben akarod látni, és majd Photoshopban módosítani, töröld ki a 'filter' sort! */
+.mapboxgl-canvas {
+    filter: grayscale(100%); 
+}
 </style>
 </head>
 <body>
@@ -19,95 +26,29 @@ body { margin: 0; padding: 0; }
 
     const map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/light-v11', // A színezhető alap
+        // VISSZATÉRÜNK A STANDARDHOZ (Mert csak ebben van vetett árnyék!)
+        style: 'mapbox://styles/mapbox/standard', 
         center: [19.877, 47.486],
         zoom: 16,
-        pitch: 62,      // Kicsit jobban megdöntve a drámai hatásért
+        pitch: 62,
         bearing: 30,
         antialias: true
     });
 
+    // Itt állítjuk be a "Standard" stílus extráit
     map.on('style.load', () => {
-
-        // ============================================================
-        // 0. TISZTÍTÁS (Köd és Feliratok eltüntetése)
-        // ============================================================
         
-        // 1. Köd kikapcsolása
-        map.setFog(null);
-
-        // 2. Összes felirat eltüntetése
-        // ITT HOZZUK LÉTRE A 'layers' VÁLTOZÓT ELŐSZÖR (ÉS UTOLJÁRA)
-        const layers = map.getStyle().layers;
-        
-        for (const layer of layers) {
-            if (layer.type === 'symbol') {
-                map.setLayoutProperty(layer.id, 'visibility', 'none');
-            }
-        }
-
-        // ============================================================
-        // A. FÉNYEK ÉS ÁRNYÉKOK
-        // ============================================================
-        map.setLight({
-            'anchor': 'viewport', 
-            'color': '#ffffff',   
-            'intensity': 0.6,     
-            'position': [1.5, 90, 80] 
+        // 1. FELIRATOK ELTÜNTETÉSE (Configgal sokkal egyszerűbb itt!)
+        map.setConfig('basemap', {
+            'showPointOfInterestLabels': false, // Boltok nevei
+            'showTransitLabels': false,         // Buszmegállók
+            'showRoadLabels': false,            // Utcanevek
+            'showPlaceLabels': false,           // Városnevek
+            'lightPreset': 'dawn'               // 'dawn' (hajnal) = Hosszú, drámai árnyékok!
+                                                // Próbáld ki: 'day', 'dusk', 'night'
         });
 
-        // ============================================================
-        // B. SZÍNEZÉS
-        // ============================================================
-
-        // 1. VÍZ (Tavak)
-        if (map.getLayer('water')) {
-            map.setPaintProperty('water', 'fill-color', '#a3e0ff');
-        }
-        // 2. FOLYÓK (Zagyva)
-        if (map.getLayer('waterway')) {
-            map.setPaintProperty('waterway', 'line-color', '#a3e0ff');
-            map.setPaintProperty('waterway', 'line-width', 20); 
-        }
-
-        // 3. ZÖLD TERÜLETEK
-        const landLayers = ['landuse', 'landcover', 'national-park'];
-        for (const layer of landLayers) {
-            if (map.getLayer(layer)) {
-                map.setPaintProperty(layer, 'fill-color', '#d0d0d0'); 
-                map.setPaintProperty(layer, 'fill-opacity', 0.5);
-            }
-        }
-
-        // 4. UTAK
-        // HIBAJAVÍTÁS: Itt töröltem a "const layers = ..." sort, mert már létezik!
-        for (const layer of layers) {
-            if (layer.id.indexOf('road') >= 0 && layer.type === 'line') {
-                map.setPaintProperty(layer.id, 'line-color', '#8c8c8c');
-            }
-        }
-
-        // ============================================================
-        // C. 3D ÉPÜLETEK
-        // ============================================================
-        map.addLayer({
-            'id': '3d-buildings',
-            'source': 'composite',
-            'source-layer': 'building',
-            'filter': ['==', 'extrude', 'true'],
-            'type': 'fill-extrusion',
-            'minzoom': 14,
-            'paint': {
-                'fill-extrusion-color': '#bbbbbb', 
-                'fill-extrusion-height': ['get', 'height'],
-                'fill-extrusion-base': ['get', 'min_height'],
-                'fill-extrusion-opacity': 0.95
-            }
-        });
-
-        // ============================================================
-        // D. FÁK
-        // ============================================================
+        // 2. FÁK BETÖLTÉSE
         map.addModel('sajat-fa-modell', './fa.glb');
 
         map.addSource('fa-pontok', {
@@ -123,27 +64,13 @@ body { margin: 0; padding: 0; }
                 'model-id': 'sajat-fa-modell'
             },
             'paint': {
-                // MÉRET FIGYELMEZTETÉS: A 0.005 valószínűleg túl kicsi!
-                // Visszaírtam 1-re. Ha óriásiak a fák, írd át kisebbre.
-                // Ha még mindig nem látszanak, írd át nagyobbra (pl. 50).
+                // Mivel a Standard stílusnak saját fényei vannak, 
+                // a fák automatikusan árnyékot fognak vetni!
                 'model-scale': [0.005, 0.005, 0.005], 
                 'model-rotation': [0, 0, 0],
                 'model-translation': [0, 0, 0]
             }
         });
-        
-        // E. ÉGBOLT (Napfény miatt)
-        if (!map.getLayer('sky')) {
-            map.addLayer({
-                'id': 'sky',
-                'type': 'sky',
-                'paint': {
-                    'sky-type': 'atmosphere',
-                    'sky-atmosphere-sun': [0.0, 0.0],
-                    'sky-atmosphere-sun-intensity': 15
-                }
-            });
-        }
     });
 </script>
 </body>
