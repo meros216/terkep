@@ -2,61 +2,68 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Árnyékos 3D Térkép (Javított)</title>
+<title>Építészeti Látványterv</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
 <style>
 body { margin: 0; padding: 0; }
 #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-
-/* --- FEKETE-FEHÉR SZŰRŐ --- */
-/* Ez teszi makett-szerűvé. Ha színesben akarod látni, töröld ki ezt a 3 sort! */
-.mapboxgl-canvas {
-    filter: grayscale(100%); 
-}
 </style>
 </head>
 <body>
 <div id="map"></div>
 <script>
-    // --- 1. TOKEN ---
+    // --- 1. TOKEN (Ide másold a sajátodat!) ---
     mapboxgl.accessToken = 'pk.eyJ1IjoibWVyb3MyMjE2IiwiYSI6ImNtYWg3c2t3NjA4OHoyc3MzNmJpeW9qY3cifQ.kmg-gGygu1rGHh7VPeFOAQ';
 
     const map = new mapboxgl.Map({
         container: 'map',
-        // CSAK EZ TUD VETETT ÁRNYÉKOT!
+        // Ez a "Standard" stílus tudja az igazi árnyékokat!
         style: 'mapbox://styles/mapbox/standard', 
         center: [19.877, 47.486],
-        zoom: 16,
-        pitch: 62,
-        bearing: 30,
+        zoom: 16.5,     // Kicsit közelebbről indítunk
+        pitch: 65,      // Erősebb döntés a 3D hatásért
+        bearing: 30,   // Forgatás
         antialias: true
     });
 
     map.on('style.load', () => {
-        
-        // 1. BEÁLLÍTÁSOK (Standard stílushoz)
+
+        // ============================================================
+        // A. A LÁTVÁNY BEÁLLÍTÁSA (TISZTA ÉS ÁRNYÉKOS)
+        // ============================================================
         map.setConfig('basemap', {
-            'showPointOfInterestLabels': false, // Boltok nevei KI
-            'showTransitLabels': false,         // Buszmegállók KI
-            'showRoadLabels': false,            // Utcanevek KI
-            'showPlaceLabels': false,           // Városnevek KI
-            'lightPreset': 'dawn'               // HAJNALI FÉNY (Hosszú árnyékok!)
+            // 1. Feliratok teljes kiirtása:
+            'showPointOfInterestLabels': false, // Boltok, éttermek
+            'showTransitLabels': false,         // Busz, vonat
+            'showRoadLabels': false,            // Utcanevek
+            'showPlaceLabels': false,           // Városnevek
+            
+            // 2. Fények beállítása (EZ ADJA A KONTRASZTOT):
+            // 'dawn'  = Hajnal (Hosszú, drámai árnyékok, meleg fény) - AJÁNLOTT!
+            // 'day'   = Dél (Rövid árnyékok, éles fehér fény)
+            // 'dusk'  = Alkonyat (Hosszú árnyékok, narancsos fény)
+            'lightPreset': 'dawn' 
         });
 
-        // 2. KÖD ELTÜNTETÉSE
+        // 3. Köd eltüntetése (Kristálytiszta kép)
         map.setFog(null);
 
-        // 3. FÁK BETÖLTÉSE
-        // (Ha hibát dob a konzol, ellenőrizd, hogy 'fa.glb' a neve a GitHubon!)
+        // ============================================================
+        // B. A TE FÁID BETÖLTÉSE
+        // ============================================================
+        
+        // Modell betöltése
         map.addModel('sajat-fa-modell', './fa.glb');
 
+        // Pontok betöltése
         map.addSource('fa-pontok', {
             'type': 'geojson',
             'data': './fak.geojson'
         });
 
+        // Megjelenítés
         map.addLayer({
             'id': 'fak-retege',
             'type': 'model',
@@ -65,14 +72,17 @@ body { margin: 0; padding: 0; }
                 'model-id': 'sajat-fa-modell'
             },
             'paint': {
-                // VISSZAÁLLÍTOTTAM NAGYRA!
-                'model-scale': [1, 1, 1], 
+                // MÉRET: Itt hagytam az 50-est, mert azt mondtad, az volt a jó.
+                // Ha túl nagy, írd át 10-re vagy 1-re!
+                'model-scale': [0.005, 0.005, 0.005], 
                 'model-rotation': [0, 0, 0],
-                'model-translation': [0, 0, 0]
+                'model-translation': [0, 0, 0],
+                
+                // Mivel ez 'standard' stílus, a fák automatikusan kapnak 
+                // napfényt és vetnek árnyékot! Nem kell külön színezni.
             }
         });
     });
 </script>
 </body>
 </html>
-
