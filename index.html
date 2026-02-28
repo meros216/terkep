@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Monokróm Erdő Kék Vízzel</title>
+<title>Monokróm 3D Térkép - Full Control</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
@@ -14,27 +14,80 @@ body { margin: 0; padding: 0; }
 <body>
 <div id="map"></div>
 <script>
-    // --- 1. LÉPÉS: A TOKENED ---
+    // --- 1. A TOKENED ---
     mapboxgl.accessToken = 'pk.eyJ1IjoibWVyb3MyMjE2IiwiYSI6ImNtYWg3c2t3NjA4OHoyc3MzNmJpeW9qY3cifQ.kmg-gGygu1rGHh7VPeFOAQ';
 
     const map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/light-v11', // Alap szürke térkép
+        style: 'mapbox://styles/mapbox/light-v11', // Alap lapos térkép
         center: [19.877, 47.486],
         zoom: 16,
-        pitch: 60,
-        bearing: 30,
+        pitch: 60,   // Döntés
+        bearing: 30, // Forgatás
         antialias: true
     });
 
     map.on('style.load', () => {
-        
-        // --- 2. LÉPÉS: VÍZ SZÍNEZÉSE ---
+
+        // ============================================================
+        // A. SZÍNEZÉS (ITT TUDSZ MINDENT ÁTFESTENI!)
+        // ============================================================
+
+        // 1. VÍZ SZÍNEZÉSE (Kék)
         if (map.getLayer('water')) {
-            map.setPaintProperty('water', 'fill-color', '#a3e0ff'); // KÉK
+            map.setPaintProperty('water', 'fill-color', '#a3e0ff');
         }
 
-        // --- 3. LÉPÉS: FÁK BETÖLTÉSE ÉS ÁTSZÍNEZÉSE ---
+        // 2. ZÖLD TERÜLETEK (Parkok, füves részek)
+        // Most szürkére állítottam (#d0d0d0), de átírhatod bármire!
+        const landLayers = ['landuse', 'landcover', 'national-park'];
+        for (const layer of landLayers) {
+            if (map.getLayer(layer)) {
+                map.setPaintProperty(layer, 'fill-color', '#d0d0d0'); 
+                map.setPaintProperty(layer, 'fill-opacity', 0.5); // Kicsit átlátszó
+            }
+        }
+
+        // 3. UTAK SZÍNEZÉSE (Fehér)
+        // A Mapboxban sokféle út réteg van, ezeket mind megkeressük és átfestjük
+        const layers = map.getStyle().layers;
+        for (const layer of layers) {
+            if (layer.id.indexOf('road') >= 0) {
+                // Csak a vonalakat színezzük, a szövegeket nem
+                if (layer.type === 'line') {
+                    map.setPaintProperty(layer.id, 'line-color', '#ffffff');
+                }
+            }
+        }
+
+        // ============================================================
+        // B. 3D ÉPÜLETEK HOZZÁADÁSA (Ez csinálja az árnyékot is!)
+        // ============================================================
+        
+        map.addLayer({
+            'id': '3d-buildings',
+            'source': 'composite',
+            'source-layer': 'building',
+            'filter': ['==', 'extrude', 'true'],
+            'type': 'fill-extrusion',
+            'minzoom': 15,
+            'paint': {
+                // Milyen színűek legyenek a házak? (Most sötétszürke: #aaaaaa)
+                'fill-extrusion-color': '#aaaaaa',
+
+                // Ez emeli ki őket a földből (NE VÁLTOZTASD):
+                'fill-extrusion-height': ['get', 'height'],
+                'fill-extrusion-base': ['get', 'min_height'],
+                
+                // Árnyék hatás erősítése:
+                'fill-extrusion-opacity': 0.9
+            }
+        });
+
+        // ============================================================
+        // C. FÁK (A Te Modelled)
+        // ============================================================
+
         map.addModel('sajat-fa-modell', './fa.glb');
 
         map.addSource('fa-pontok', {
@@ -53,16 +106,13 @@ body { margin: 0; padding: 0; }
                 'model-scale': [8, 8, 8],
                 'model-rotation': [0, 0, 0],
                 'model-translation': [0, 0, 0],
-
-                // --- ITT TÖRTÉNIK A VARÁZSLAT! ---
-                // Ez a sor mondja meg, milyen színű legyen a fa:
-                'model-color': '#808080', // Középszürke (írhatsz 'white'-ot vagy 'black'-et is)
                 
-                // Ez a sor mondja meg, mennyire fedje el az eredeti színt:
-                // 0 = eredeti zöld, 1 = teljesen szürke
-                'model-color-mix-intensity': 1 
+                // Ha fekete-fehér fát töltöttél le, ezt a két sort töröld ki!
+                // 'model-color': '#cfd8dc', 
+                // 'model-color-mix-intensity': 0.8
             }
         });
+
     });
 </script>
 </body>
